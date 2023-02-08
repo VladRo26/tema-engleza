@@ -1,0 +1,222 @@
+#include <iostream>
+#include <bits/stdc++.h>
+#include <vector>
+using namespace std;
+
+struct node
+{
+    int value;
+    node *left, *right;
+};
+
+node *newNode(int value)
+{
+    node *N = new node();
+    N->value = value;
+    N->left = NULL;
+    N->right = NULL;
+    return N;
+};
+
+typedef node *BinaryTree;
+
+// bool isSearchTree(BinaryTree &T)
+// {
+//     if (T == NULL)
+//         return true; // daca este gol, este arbore binar de cautare
+//     if (T->left != NULL && T->left->value > T->value)
+//         return false; // daca are fiu stanga, dar daca valoarea lui este mai mare decat radacina, nu este ABC
+//     if (T->right != NULL && T->right->value < T->value)
+//         return false;                                       // daca are fiu dreapta, dar daca valoarea lui este mai mica decat radacina, nu este ABC
+//     return isSearchTree(T->left) && isSearchTree(T->right); // altfel este ABC
+// } // O(n) n- nr de noduri -- nu e corect
+
+int isBSTUtil(BinaryTree &T, int min, int max)
+{
+    if (T == NULL) // daca este gol, este ABC
+        return 1;
+    if (T->value < min || T->value > max)
+        return 0;                                                                           // daca valoarea este mai mica decat minimul sau mai mare decat maximul, nu este ABC
+    return isBSTUtil(T->left, min, T->value - 1) && isBSTUtil(T->right, T->value + 1, max); // altfel este ABC
+}
+
+bool isSearchTree(BinaryTree &T)
+{
+    return isBSTUtil(T, INT_MIN, INT_MAX);
+}
+
+int height(BinaryTree &T)
+{
+    if (T == NULL)
+        return 0;
+    int hl = height(T->left);
+    int hr = height(T->right);
+    return 1 + max(hr, hl);
+}
+
+bool isAVL(BinaryTree &T)
+{
+    if (T == NULL)
+        return true;
+    return (abs(height(T->left) - height(T->right)) <= 1 && isAVL(T->left) && isAVL(T->right));
+}
+
+int biggestSearchTree(BinaryTree &T)
+{
+    int max_size = 0;
+    int curr_size = 0;
+    if (T == NULL)
+        return 0;
+    if (isSearchTree(T))
+    {
+        curr_size = 1 + biggestSearchTree(T->left) + biggestSearchTree(T->right);
+        max_size = max(max_size, curr_size);
+    }
+    max_size = max(max_size, biggestSearchTree(T->left));
+    max_size = max(max_size, biggestSearchTree(T->right));
+    return max_size;
+}
+
+int biggestSearchTree2(BinaryTree &T)
+{
+    int max_size = 0;
+    int curr_size = 0;
+    if (T == NULL)
+        return 0;
+    if (isSearchTree(T))
+    {
+        curr_size = 1 + biggestSearchTree2(T->left) + biggestSearchTree2(T->right);
+        max_size = max(curr_size, max_size);
+    }
+
+    max_size = max(max_size, biggestSearchTree2(T->left));
+    max_size = max(max_size, biggestSearchTree2(T->right));
+    return max_size;
+}
+
+int biggestAVL(BinaryTree &T)
+{
+    int max_size = 0;
+    int curr_size = 0;
+    if (T == NULL)
+        return 0;
+    if (isAVL(T))
+    {
+        curr_size = 1 + biggestAVL(T->left) + biggestAVL(T->right);
+        max_size = max(max_size, curr_size);
+    }
+    max_size = max(max_size, biggestAVL(T->left));
+    max_size = max(max_size, biggestAVL(T->right));
+    return max_size;
+}
+// int longestMonotonicPath(BinaryTree &T)
+// {
+//     if (T == NULL)
+//         return 0;
+//     int lPath = longestMonotonicPath(T->left);
+//     int rPath = longestMonotonicPath(T->right);
+//     int lMono = 0, rMono = 0;
+//     if (T->left != NULL && T->left->value < T->value)
+//         lMono = 1 + longestMonotonicPath(T->left);
+//     if (T->right != NULL && T->right->value > T->value)
+//         rMono = 1 + longestMonotonicPath(T->right);
+//     return max(lMono + rMono, max(lPath, rPath));
+// }
+
+// int longestMonotonicPath(BinaryTree &T)
+// {
+//     if (T == NULL)
+//         return 0;
+//     int l = longestMonotonicPath(T->left);
+//     int r = longestMonotonicPath(T->right);
+//     int inc = 1, dec = 1;
+//     if (T->left && T->left->value < T->value)
+//         inc = 1 + longestMonotonicPath(T->left);
+//     if (T->right && T->right->value < T->value)
+//         inc = max(inc, 1 + longestMonotonicPath(T->right));
+//     if (T->left && T->left->value > T->value)
+//         dec = 1 + longestMonotonicPath(T->left);
+//     if (T->right && T->right->value > T->value)
+//         dec = max(dec, 1 + longestMonotonicPath(T->right));
+//     return max(inc, dec);
+// }
+
+// int longestMonotonicPath(BinaryTree &T)
+// {
+//     if (T == NULL)
+//         return 0;
+//     int l, r = 1;
+//     BinaryTree T1, T2;
+//     T1 = T;
+//     T2 = T;
+//     while (T1->left)
+//     {
+//         if (T1->left != NULL && T1->left->value < T1->value)
+//             l++;
+//         T1 = T1->left;
+//     }
+//     while (T2->right)
+//     {
+//         if (T2->right != NULL && T2->right->value > T2->value)
+//             r++;
+//         T2 = T2->right;
+//     }
+//     if (T->value < T->right->value)
+//         return l + r;
+//     return max(l, r);
+// }
+int longestMonotonicPathRec(BinaryTree &T, int &maxLength)
+{
+    if (T == NULL)
+        return 0;
+
+    int leftLength = longestMonotonicPathRec(T->left, maxLength);
+    int rightLength = longestMonotonicPathRec(T->right, maxLength);
+
+    int inc = 1, dec = 1;
+    if (T->left && T->value > T->left->value)
+        inc = 1 + leftLength;
+
+    if (T->right && T->value < T->right->value)
+        dec = 1 + rightLength;
+
+    maxLength = max(maxLength, inc + dec - 1);
+
+    return max(inc, dec);
+}
+
+int longestMonotonicPath(BinaryTree &T)
+{
+    int maxLength = 0;
+    longestMonotonicPathRec(T, maxLength);
+    return maxLength;
+}
+
+bool isInOrder(const vector<int> &v)
+{
+    int i = 0;
+    for (int i = 1; i < v.size(); i++)
+        if (v[i] < v[i - 1])
+            return false;
+    return true;
+} // daca este in order este vectorul crescator
+
+int main()
+{
+    BinaryTree T = newNode(4);
+    T->left = newNode(2);
+    T->left->right = newNode(3);
+    T->left->left = newNode(1);
+    T->right = newNode(6);
+    T->right->left = newNode(5);
+    // T->right->right = newNode(7);
+    // T->right->right->right = newNode(9);
+    // T->right->right->right->right = newNode(10);
+
+    cout << isSearchTree(T) << endl;
+    cout << isAVL(T) << endl;
+    cout << biggestSearchTree(T) << endl;
+    cout << biggestAVL(T) << endl;
+    cout << longestMonotonicPath(T) << endl;
+    return 0;
+}
